@@ -1,0 +1,20 @@
+services:
+  notes:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    container_name: notes-app
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - DATABASE_URL=/data/notes.db
+      - SESSION_SECRET=${SESSION_SECRET:-change-this-to-a-secure-secret-32-chars-min}
+    volumes:
+      - notes-data:/data
+
+volumes:
+  notes-data:
+    driver: local

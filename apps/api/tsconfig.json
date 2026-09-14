@@ -1,0 +1,11 @@
+{
+  "extends": "@notes/config/tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    },
+    "types": ["bun-types"]
+  },
+  "include": ["src/**/*"]
+}
