@@ -7,6 +7,7 @@ export function runMigrations() {
       id TEXT PRIMARY KEY,
       username TEXT NOT NULL UNIQUE,
       password_hash TEXT NOT NULL,
+      role TEXT NOT NULL DEFAULT 'user',
       created_at INTEGER NOT NULL,
       updated_at INTEGER NOT NULL
     );
@@ -68,6 +69,10 @@ export function runMigrations() {
     CREATE INDEX IF NOT EXISTS note_tags_note_id_idx ON note_tags(note_id);
     CREATE INDEX IF NOT EXISTS note_tags_tag_id_idx ON note_tags(tag_id);
   `);
+
+  try {
+    rawSqlite.run(`ALTER TABLE users ADD COLUMN role TEXT NOT NULL DEFAULT 'user'`);
+  } catch {}
 
   initFts5();
   console.log("✅ SQLite Database schema and FTS5 initialized");

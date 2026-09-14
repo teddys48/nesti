@@ -42,6 +42,7 @@ export async function validateSession(sessionId: string) {
       user: {
         id: users.id,
         username: users.username,
+        role: users.role,
         createdAt: users.createdAt,
       },
     })

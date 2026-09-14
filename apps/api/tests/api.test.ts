@@ -1,5 +1,7 @@
 import { describe, expect, it, beforeAll } from "bun:test";
 import { app } from "../src/index";
+import { db } from "../src/db";
+import { users, sessions, notes, tags, noteTags, noteRevisions } from "../src/db/schema";
 
 describe("Notes API Integration Tests", () => {
   let cookieHeader = "";
@@ -7,30 +9,64 @@ describe("Notes API Integration Tests", () => {
   let tagId = "";
   let revisionId = "";
 
-  const testUser = {
-    username: `testuser_${Date.now()}`,
+  const testAdmin = {
+    username: `admin_${Date.now()}`,
     password: "Password123!",
   };
 
-  it("should register a new user and return session cookie", async () => {
+  const testUser = {
+    username: `regular_${Date.now()}`,
+    password: "Password123!",
+  };
+
+  beforeAll(async () => {
+    // Clear test database to start fresh
+    await db.delete(noteTags);
+    await db.delete(noteRevisions);
+    await db.delete(notes);
+    await db.delete(tags);
+    await db.delete(sessions);
+    await db.delete(users);
+  });
+
+  it("should return hasUsers false when DB is empty", async () => {
+    const res = await app.handle(
+      new Request("http://localhost/api/auth/setup-status", { method: "GET" })
+    );
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.hasUsers).toBe(false);
+  });
+
+  it("should register initial admin user and return session cookie", async () => {
     const res = await app.handle(
       new Request("http://localhost/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(testUser),
+        body: JSON.stringify(testAdmin),
       })
     );
 
     expect(res.status).toBe(200);
     const body = await res.json();
-    expect(body.user.username).toBe(testUser.username.toLowerCase());
+    expect(body.user.username).toBe(testAdmin.username.toLowerCase());
+    expect(body.user.role).toBe("admin");
 
     const setCookie = res.headers.get("set-cookie");
     expect(setCookie).not.toBeNull();
     cookieHeader = setCookie!.split(";")[0];
   });
 
-  it("should fail to register duplicate username", async () => {
+  it("should return hasUsers true after admin is registered", async () => {
+    const res = await app.handle(
+      new Request("http://localhost/api/auth/setup-status", { method: "GET" })
+    );
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.hasUsers).toBe(true);
+  });
+
+  it("should block public registration after initial setup", async () => {
     const res = await app.handle(
       new Request("http://localhost/api/auth/register", {
         method: "POST",
@@ -39,9 +75,44 @@ describe("Notes API Integration Tests", () => {
       })
     );
 
-    expect(res.status).toBe(409);
+    expect(res.status).toBe(403);
     const body = await res.json();
-    expect(body.error.code).toBe("USERNAME_TAKEN");
+    expect(body.error.code).toBe("REGISTRATION_DISABLED");
+  });
+
+  it("should allow admin to create a new user via admin endpoint", async () => {
+    const res = await app.handle(
+      new Request("http://localhost/api/auth/admin/users", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Cookie: cookieHeader,
+        },
+        body: JSON.stringify({
+          username: testUser.username,
+          password: testUser.password,
+          role: "user",
+        }),
+      })
+    );
+
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.user.username).toBe(testUser.username.toLowerCase());
+    expect(body.user.role).toBe("user");
+  });
+
+  it("should list all users for admin", async () => {
+    const res = await app.handle(
+      new Request("http://localhost/api/auth/admin/users", {
+        method: "GET",
+        headers: { Cookie: cookieHeader },
+      })
+    );
+
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.users.length).toBe(2);
   });
 
   it("should create a tag", async () => {

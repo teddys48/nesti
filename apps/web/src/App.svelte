@@ -11,13 +11,13 @@
   import TagModal from "$features/tags/TagModal.svelte";
   import SettingsModal from "$features/settings/SettingsModal.svelte";
   import LoginView from "$features/auth/LoginView.svelte";
-  import RegisterView from "$features/auth/RegisterView.svelte";
+  import SetupAdminView from "$features/auth/SetupAdminView.svelte";
   import type { SaveStatus } from "$features/notes/SaveStatusIndicator.svelte";
   import { FileText, Plus } from "lucide-svelte";
 
   // Auth & Screen State
-  let user = $state<{ id: string; username: string } | null>(null);
-  let authScreen = $state<"login" | "register">("login");
+  let user = $state<{ id: string; username: string; role?: string } | null>(null);
+  let needsSetup = $state(false);
   let isCheckingAuth = $state(true);
 
   // Data State
@@ -52,6 +52,16 @@
   async function checkAuth() {
     isCheckingAuth = true;
     try {
+      // Check setup status (if DB has any users)
+      const setupRes = await api.api.auth['setup-status'].get();
+      if (setupRes.data && setupRes.data.hasUsers === false) {
+        needsSetup = true;
+        user = null;
+        return;
+      } else {
+        needsSetup = false;
+      }
+
       const res = await api.api.auth.session.get();
       if (res.data && 'user' in res.data) {
         user = res.data.user;
@@ -63,6 +73,22 @@
       user = null;
     } finally {
       isCheckingAuth = false;
+    }
+  }
+
+  async function handleSetupAdmin(username: string, password: string) {
+    try {
+      const res = await api.api.auth.register.post({ username, password });
+      if (res.error) {
+        return (res.error.value as any)?.error?.message || "Setup failed";
+      }
+      if (res.data && 'user' in res.data) {
+        user = res.data.user;
+        needsSetup = false;
+        await loadInitialData();
+      }
+    } catch (err: any) {
+      return err.message || "Setup failed";
     }
   }
 
@@ -399,18 +425,10 @@
   <div class="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-neutral-950">
     <div class="animate-pulse font-semibold text-gray-400">Loading Notes...</div>
   </div>
+{:else if needsSetup}
+  <SetupAdminView onsubmit={handleSetupAdmin} />
 {:else if !user}
-  {#if authScreen === "login"}
-    <LoginView
-      onsubmit={handleLogin}
-      onswitchToRegister={() => authScreen = "register"}
-    />
-  {:else}
-    <RegisterView
-      onsubmit={handleRegister}
-      onswitchToLogin={() => authScreen = "login"}
-    />
-  {/if}
+  <LoginView onsubmit={handleLogin} />
 {:else}
   <!-- Main Application Workspace Shell -->
   <div class="h-screen flex flex-col overflow-hidden bg-gray-50 dark:bg-neutral-950">
@@ -512,6 +530,7 @@
 
   <SettingsModal
     open={showSettingsModal}
+    currentUser={user}
     onclose={() => showSettingsModal = false}
     onchangePassword={handleChangePassword}
     ondeleteAccount={handleDeleteAccount}

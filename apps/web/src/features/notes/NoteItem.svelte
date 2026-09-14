@@ -41,10 +41,10 @@
   tabindex="0"
   onclick={onselect}
   onkeydown={(e) => (e.key === "Enter" || e.key === " ") && onselect()}
-  class="p-3.5 border-b border-gray-100 dark:border-neutral-800 cursor-pointer transition-colors text-left select-none {selected ? 'bg-indigo-50/80 dark:bg-indigo-950/40 border-l-4 border-l-indigo-600' : 'hover:bg-gray-50 dark:hover:bg-neutral-800/60'}"
+  class="p-3.5 border-b border-gray-100 dark:border-neutral-800 cursor-pointer transition-all text-left select-none {selected ? 'bg-blue-50/90 dark:bg-indigo-950/60 border-l-4 border-l-blue-600 dark:border-l-indigo-500 shadow-2xs' : 'hover:bg-gray-50 dark:hover:bg-neutral-800/60'}"
 >
   <div class="flex items-center justify-between gap-2 mb-1">
-    <h4 class="font-semibold text-sm text-gray-900 dark:text-gray-100 truncate">
+    <h4 class="font-semibold text-sm truncate {selected ? 'text-blue-900 dark:text-blue-200' : 'text-gray-900 dark:text-gray-100'}">
       {note.title || "Untitled Note"}
     </h4>
     <span class="text-xs text-gray-400 dark:text-gray-500 shrink-0">

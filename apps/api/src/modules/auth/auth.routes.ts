@@ -1,4 +1,4 @@
-import { Elysia } from "elysia";
+import { Elysia, t } from "elysia";
 import { registerSchema, loginSchema, changePasswordSchema } from "./auth.schema";
 import { AuthService } from "./auth.service";
 import { SESSION_COOKIE, validateSession } from "../../lib/auth";
@@ -6,6 +6,10 @@ import { SESSION_COOKIE, validateSession } from "../../lib/auth";
 const authService = new AuthService();
 
 export const authRoutes = new Elysia({ prefix: "/api/auth" })
+  .get("/setup-status", async () => {
+    const userCount = await authService.getUserCount();
+    return { hasUsers: userCount > 0 };
+  })
   .post(
     "/register",
     async ({ body, cookie, headers, set }) => {
@@ -105,4 +109,55 @@ export const authRoutes = new Elysia({ prefix: "/api/auth" })
     await authService.deleteAccount(sessionData.user.id);
     cookie[SESSION_COOKIE].remove();
     return { success: true };
+  })
+  // Admin Routes
+  .get("/admin/users", async ({ cookie, set }) => {
+    const sessionId = cookie[SESSION_COOKIE].value;
+    const sessionData = await validateSession(sessionId as string);
+    if (!sessionData) {
+      set.status = 401;
+      return { error: { code: "UNAUTHORIZED", message: "Not authenticated" } };
+    }
+
+    const usersList = await authService.listUsersByAdmin(sessionData.user.id);
+    return { users: usersList };
+  })
+  .post(
+    "/admin/users",
+    async ({ body, cookie, set }) => {
+      const sessionId = cookie[SESSION_COOKIE].value;
+      const sessionData = await validateSession(sessionId as string);
+      if (!sessionData) {
+        set.status = 401;
+        return { error: { code: "UNAUTHORIZED", message: "Not authenticated" } };
+      }
+
+      const user = await authService.createUserByAdmin(
+        sessionData.user.id,
+        body.username,
+        body.password,
+        body.role
+      );
+
+      return { user };
+    },
+    {
+      body: t.Object({
+        username: t.String({ minLength: 3 }),
+        password: t.String({ minLength: 6 }),
+        role: t.Optional(t.String()),
+      }),
+    }
+  )
+  .delete("/admin/users/:id", async ({ params, cookie, set }) => {
+    const sessionId = cookie[SESSION_COOKIE].value;
+    const sessionData = await validateSession(sessionId as string);
+    if (!sessionData) {
+      set.status = 401;
+      return { error: { code: "UNAUTHORIZED", message: "Not authenticated" } };
+    }
+
+    await authService.deleteUserByAdmin(sessionData.user.id, params.id);
+    return { success: true };
   });
+

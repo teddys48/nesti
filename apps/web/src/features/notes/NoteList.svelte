@@ -48,7 +48,7 @@
       {#each notes as note (note.id)}
         <NoteItem
           {note}
-          selected={selectedNoteId === note.id}
+          selected={Boolean(selectedNoteId && String(selectedNoteId) === String(note.id))}
           onselect={() => onselectNote(note.id)}
         />
       {/each}
