@@ -111,7 +111,14 @@
     }
     editor.chain().focus().extendMarkRange("link").setLink({ href: url }).run();
   }
+  function handleKeydown(e: KeyboardEvent) {
+    if (e.key === "Escape" && showTagDropdown) {
+      showTagDropdown = false;
+    }
+  }
 </script>
+
+<svelte:window onkeydown={handleKeydown} />
 
 <div class="flex-1 flex flex-col h-full bg-white dark:bg-neutral-900 overflow-hidden">
   <!-- Top Editor Toolbar & Actions Header -->
@@ -265,6 +272,7 @@
       placeholder="Note Title"
       bind:value={title}
       oninput={triggerChange}
+      onfocus={() => (showTagDropdown = false)}
       class="w-full text-2xl font-bold bg-transparent border-none outline-none text-gray-900 dark:text-gray-100 placeholder-gray-300 dark:placeholder-gray-700"
     />
 
@@ -292,12 +300,32 @@
         </button>
 
         {#if showTagDropdown}
-          <div class="absolute left-0 mt-1 w-48 bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-lg shadow-xl p-2 z-30 max-h-48 overflow-y-auto">
+          <!-- Backdrop overlay to dismiss dropdown when clicking outside -->
+          <button
+            type="button"
+            tabindex="-1"
+            class="fixed inset-0 z-20 cursor-default bg-transparent border-none p-0 m-0 w-full h-full"
+            onclick={() => (showTagDropdown = false)}
+            aria-label="Close tag selection menu"
+          ></button>
+
+          <div class="absolute left-0 mt-1 w-52 bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-lg shadow-xl p-2 z-30 max-h-52 overflow-y-auto">
+            <div class="flex items-center justify-between px-1 pb-1 mb-1 border-b border-gray-100 dark:border-neutral-800">
+              <span class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Select Tags</span>
+              <button
+                type="button"
+                onclick={() => (showTagDropdown = false)}
+                class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 p-0.5 rounded"
+              >
+                <X class="w-3.5 h-3.5" />
+              </button>
+            </div>
             {#if availableTags.length === 0}
-              <p class="text-xs text-gray-400 p-1">No tags created yet.</p>
+              <p class="text-xs text-gray-400 p-2 text-center">No tags created yet.</p>
             {:else}
               {#each availableTags as tag}
                 <button
+                  type="button"
                   onclick={() => toggleTag(tag.id)}
                   class="w-full flex items-center justify-between px-2 py-1.5 text-xs rounded hover:bg-gray-100 dark:hover:bg-neutral-800 transition-colors"
                 >
@@ -317,6 +345,12 @@
     </div>
 
     <!-- TipTap Canvas Container -->
-    <div bind:this={element} class="min-h-[400px] text-gray-800 dark:text-gray-200 leading-relaxed"></div>
+    <!-- svelte-ignore a11y_click_events_have_key_events -->
+    <!-- svelte-ignore a11y_no_static_element_interactions -->
+    <div
+      bind:this={element}
+      onclick={() => (showTagDropdown = false)}
+      class="min-h-[400px] text-gray-800 dark:text-gray-200 leading-relaxed outline-none"
+    ></div>
   </div>
 </div>

@@ -47,9 +47,9 @@
       <div class="w-12 h-12 bg-indigo-600 text-white rounded-xl mx-auto flex items-center justify-center text-xl font-bold shadow-md">
         <ShieldCheck class="w-7 h-7" />
       </div>
-      <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">Initial Setup</h1>
+      <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">Nesti Initial Setup</h1>
       <p class="text-xs text-gray-500 dark:text-gray-400">
-        No accounts found in database. Create the primary <strong>Admin</strong> account to get started.
+        Welcome to <strong>Nesti</strong>! Create the primary <strong>Admin</strong> account to get started.
       </p>
     </div>
 

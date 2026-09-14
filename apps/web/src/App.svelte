@@ -423,7 +423,7 @@
 
 {#if isCheckingAuth}
   <div class="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-neutral-950">
-    <div class="animate-pulse font-semibold text-gray-400">Loading Notes...</div>
+    <div class="animate-pulse font-semibold text-gray-400">Loading Nesti...</div>
   </div>
 {:else if needsSetup}
   <SetupAdminView onsubmit={handleSetupAdmin} />

@@ -35,8 +35,8 @@
       </svg>
     </button>
     <div class="flex items-center gap-2 font-bold text-lg text-gray-900 dark:text-gray-100">
-      <span class="bg-indigo-600 text-white w-7 h-7 rounded-lg flex items-center justify-center text-sm shadow-sm">N</span>
-      <span>Notes</span>
+      <span class="bg-indigo-600 text-white w-7 h-7 rounded-lg flex items-center justify-center text-sm shadow-sm font-extrabold">N</span>
+      <span>Nesti</span>
     </div>
   </div>
 

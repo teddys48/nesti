@@ -260,4 +260,17 @@ describe("Notes API Integration Tests", () => {
     );
     expect(restoreRes.status).toBe(200);
   });
+
+  it("should serve root and SPA routes via static plugin and fallback", async () => {
+    const rootRes = await app.handle(new Request("http://localhost/"));
+    expect(rootRes.status).toBe(200);
+
+    const spaRes = await app.handle(new Request("http://localhost/notes"));
+    expect(spaRes.status).toBe(200);
+
+    const apiNotFoundRes = await app.handle(new Request("http://localhost/api/non-existent"));
+    expect(apiNotFoundRes.status).toBe(404);
+    const body = await apiNotFoundRes.json();
+    expect(body.error.code).toBe("NOT_FOUND");
+  });
 });

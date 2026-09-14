@@ -39,8 +39,8 @@
       <div class="w-12 h-12 bg-indigo-600 text-white rounded-xl mx-auto flex items-center justify-center text-xl font-bold shadow-md">
         N
       </div>
-      <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">Welcome Back</h1>
-      <p class="text-xs text-gray-500 dark:text-gray-400">Sign in to access your notes</p>
+      <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">Welcome to Nesti</h1>
+      <p class="text-xs text-gray-500 dark:text-gray-400">Sign in to access your notes on Nesti</p>
     </div>
 
     <form onsubmit={handleSubmit} class="space-y-4">
@@ -71,7 +71,7 @@
     </form>
 
     <div class="text-center text-xs text-gray-400 dark:text-gray-500 pt-2 border-t border-gray-100 dark:border-neutral-800">
-      Self-hosted Notes App • Admin manages user accounts
+      Self-hosted Nesti App • Admin manages user accounts
     </div>
   </div>
 </div>

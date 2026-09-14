@@ -1,9 +1,9 @@
 services:
-  notes:
+  nesti:
     build:
       context: ..
       dockerfile: deploy/Dockerfile
-    container_name: notes-app
+    container_name: nesti
     restart: unless-stopped
     ports:
       - "3000:3000"
@@ -12,9 +12,10 @@ services:
       - PORT=3000
       - DATABASE_URL=/data/notes.db
       - SESSION_SECRET=${SESSION_SECRET:-change-this-to-a-secure-secret-32-chars-min}
+      - WEB_DIST_PATH=${WEB_DIST_PATH:-apps/web/dist}
     volumes:
-      - notes-data:/data
+      - nesti-data:/data
 
 volumes:
-  notes-data:
+  nesti-data:
     driver: local
